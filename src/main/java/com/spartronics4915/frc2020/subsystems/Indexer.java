@@ -96,6 +96,11 @@ public class Indexer extends SpartronicsSubsystem
      */
     public void spinAt(double dutyCycle)
     {
+        if(dutyCycle == 0.0) {
+            mUnjamMotor.setPercentOutput(0.0);
+        } else {
+            mUnjamMotor.setPercentOutput(1.0);
+        }
         mIndexerMotor.setPercentOutput(dutyCycle);
     }
 

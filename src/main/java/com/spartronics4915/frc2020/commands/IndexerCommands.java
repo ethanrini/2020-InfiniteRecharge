@@ -42,7 +42,7 @@ public class IndexerCommands
         public void initialize()
         {
             super.initialize();
-            System.out.println("WaitForBallHeld");
+            //System.out.println("WaitForBallHeld");
         }
     }
 
@@ -318,7 +318,7 @@ public class IndexerCommands
                 new WaitForBallHeld(),
                 new LoadBallToSlot(0),
                 new ParallelCommandGroup(
-                    new WaitCommand(0.4), new StartTransfer()),
+                    new WaitCommand(0.15), new StartTransfer()),
                 new SpinIndexer(1),
                 new EndTransfer(),
                 new InstantCommand(() -> mIndexer.addBalls(1), mIndexer)
@@ -329,6 +329,39 @@ public class IndexerCommands
         public boolean isFinished()
         {
             return (mIndexer.getIntakeBallLoaded() && mIndexer.getSlotBallLoaded()) || super.isFinished();
+        }
+    }
+
+    public class LoadFromIntakeWhileIntaking extends SequentialCommandGroup
+    {
+        public LoadFromIntakeWhileIntaking()
+        {
+            if(!mIndexer.getSlotBallLoaded())
+            {
+                addCommands(
+                    new EndKicker(), // for safety
+                    // new AlignIndexer(),
+                    new WaitForBallHeld(),
+                    new LoadBallToSlot(0),
+                    new ParallelCommandGroup(
+                        new WaitCommand(0.1), new StartTransfer()),
+                    new EndTransfer(),
+                    new WaitCommand(0.1),
+                    new SpinIndexer(1),
+                    new InstantCommand(() -> mIndexer.addBalls(1), mIndexer)
+                );
+            } else {
+                addCommands(
+                    new EndKicker(),
+                    new WaitForBallHeld()
+                );
+            }
+        }
+
+        @Override
+        public void end(boolean interrupted)
+        {
+            mIndexer.endTransfer();
         }
     }
 
@@ -385,5 +418,46 @@ public class IndexerCommands
             );
         }
 
+    }
+
+    public class Speeen extends InstantCommand {
+        private double out;
+        public Speeen(double output) {
+            out = output;
+            addRequirements(mIndexer);
+        }
+
+        @Override
+        public void initialize() {
+            mIndexer.spinAt(out);
+        }
+    }
+
+
+    public class LoadToLauncherOptimized extends SequentialCommandGroup
+    {
+        public LoadToLauncherOptimized()
+        {
+            addCommands(
+                // new AlignIndexer(mIndexer),
+                new InstantCommand(() -> mIndexer.setZero()),
+                new SpinIndexer(-0.25),
+                new StartKicker(),
+                new WaitCommand(0.15),
+                new Speeen(0.16),
+                new WaitCommand(0.76), 
+                new StartTransfer(),
+                new WaitCommand(0.17),
+                new Speeen(0.20),
+                new WaitCommand(0.3),
+                new Speeen(0.22),
+                new WaitCommand(1.3),
+                new Speeen(0.0),
+                new EndKicker(),
+                new EndTransfer(),
+                //new InstantCommand(() -> mIndexer.addBalls(-ballsToShoot), mIndexer),
+                new AlignIndexer()
+            );
+        }
     }
 }

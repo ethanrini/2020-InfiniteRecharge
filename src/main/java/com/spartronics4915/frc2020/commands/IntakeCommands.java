@@ -45,11 +45,15 @@ public class IntakeCommands
         }
 
         @Override
-        public boolean isFinished()
+        public void execute()
         {
-            return mIndexer.getIntakeBallLoaded();
+            if(mIndexer.getIntakeBallLoaded() && (mIndexer.getSlotBallLoaded() || !mIndexer.isAtPosition())) {
+                mIntake.stop();
+            } else {
+                mIntake.harvest();
+            }
         }
-
+        
         @Override
         public void end(boolean interrupted)
         {

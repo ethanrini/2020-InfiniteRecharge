@@ -64,8 +64,8 @@ public final class Constants
             public static final double kPositionP = 0.005;
             public static final double kPositionD = 0;
             public static final double kConversionRatio = 1.0 / (187.0/20.0*9.0);
-            public static final double kMaxVelocity = 1;
-            public static final double kMaxAcceleration = 0.85;
+            public static final double kMaxVelocity = 1.5;
+            public static final double kMaxAcceleration = 1.25;
             public static final double kStallThreshold = 90.0; // FIXME: stand-in values
 
             /** Degrees */
@@ -97,7 +97,7 @@ public final class Constants
         public static final int kHarvestMotorId = 12;
         public static final int kProximitySensorId = 5; // Digital
 
-        public static final double kHarvestSpeed = 0.8; // XXX: test
+        public static final double kHarvestSpeed = 0.9; // XXX: test
         public static final double kEjectSpeed = -0.8;  // XXX: test
     }
 

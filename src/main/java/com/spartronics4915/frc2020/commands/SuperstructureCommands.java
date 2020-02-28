@@ -22,9 +22,17 @@ public class SuperstructureCommands
     {
         public LaunchSequence(int ballsToShoot)
         {
-            addCommands(
-                mLauncherCommands.new WaitForFlywheel(),
-                mIndexerCommands.new LoadToLauncher(ballsToShoot));
+            if(ballsToShoot == 5) {
+                addCommands(
+                    mLauncherCommands.new WaitForFlywheel(),
+                    mIndexerCommands.new LoadToLauncherOptimized()
+                );
+            } else {
+                addCommands(
+                    mLauncherCommands.new WaitForFlywheel(),
+                    mIndexerCommands.new LoadToLauncher(ballsToShoot)
+                );
+            }
         }
         /** XXX: should this shoot > 1? */
         public LaunchSequence()
@@ -33,13 +41,13 @@ public class SuperstructureCommands
         }
     }
 
-    public class Intake extends ParallelCommandGroup
+    public class Intake extends ParallelRaceGroup
     {
         public Intake()
         {
             addCommands(
                 mIntakeCommands.new Harvest(),
-                mIndexerCommands.new LoadFromIntake()
+                mIndexerCommands.new LoadFromIntakeWhileIntaking()
             );
         }
     }
