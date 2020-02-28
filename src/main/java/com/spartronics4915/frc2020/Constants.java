@@ -19,6 +19,12 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
+import edu.wpi.first.wpiutil.math.MatBuilder;
+import edu.wpi.first.wpiutil.math.Matrix;
+import edu.wpi.first.wpiutil.math.Nat;
+import edu.wpi.first.wpiutil.math.numbers.N1;
+import edu.wpi.first.wpiutil.math.numbers.N3;
+import edu.wpi.first.wpiutil.math.numbers.N6;
 
 public final class Constants
 {
@@ -65,7 +71,7 @@ public final class Constants
             public static final double kPositionD = 0;
             public static final double kConversionRatio = 1.0 / (187.0/20.0*9.0);
             public static final double kMaxVelocity = 1.5;
-            public static final double kMaxAcceleration = 1.25;
+            public static final double kMaxAcceleration = 2;
             public static final double kStallThreshold = 90.0; // FIXME: stand-in values
 
             /** Degrees */
@@ -221,7 +227,7 @@ public final class Constants
         public static final double kRobotMassKg = 1;
         public static final double kMoi = 1;
 
-        public static final double kP = 0;
+        public static final double kP = 0.01;
 
         // TODO: characterize
         public static final double kRightS;
@@ -251,23 +257,23 @@ public final class Constants
                     kWheelDiameter = Units.inchesToMeters(6);
                     kNativeUnitsPerRevolution = 1440.0;
                     kSlowModeMultiplier = 0.5;
-                    kLeftOutputInverted = true;
+                    kLeftOutputInverted = false;
                     kLeftFollowerOutputInverted = false;
                     kRightOutputInverted = true;
-                    kRightFollowerOutputInverted = false;
+                    kRightFollowerOutputInverted = true;
 
                     kPigeonId = -1;
                     kDriveMotorConstructor = SpartronicsSRX::makeMotor;
                     break;
                 default:
-                    kTrackWidthMeters = 26.75;
+                    kTrackWidthMeters = Units.inchesToMeters(26.75);
                     kWheelDiameter = Units.inchesToMeters(8);
                     kScrubFactor = 1;
                     kLeftS = 0.241;
-                    kLeftV = 0.204;
+                    kLeftV = 0.404;
                     kLeftA = 0.0237;
                     kRightS = 0.243;
-                    kRightV = 0.204;
+                    kRightV = 0.404;
                     kRightA = 0.0261;
                     kNativeUnitsPerRevolution = 10.71;
                     kSlowModeMultiplier = 0.5;
@@ -288,7 +294,7 @@ public final class Constants
         public static final double kStartVelocityMetersPerSec = 0;
         public static final double kEndVelocityMetersPerSec = 0;
         public static final double kMaxVelocityMetersPerSec = 1;
-        public static final double kMaxAccelerationMeterPerSecSq = .1;
+        public static final double kMaxAccelerationMeterPerSecSq = 0.5;
 
         public static final Pose2d kStartPointLeft = new Pose2d(Units.inchesToMeters(508),
             Units.inchesToMeters(138), Rotation2d.fromDegrees(180));
@@ -305,10 +311,18 @@ public final class Constants
         //  have competing implementations. 
         // If new measurements for Vision or Turret mounting are obtained,
         // please also update CoordSysMgr20202.java.
-        public static final double kMeasurementCovariance = 0.001;
+        public static final double kT265InternalMeasurementCovariance = 0.001;
         public static final Pose2d kSlamraToRobot = new Pose2d(Units.inchesToMeters(-11.75), 
                                                             Units.inchesToMeters(-4.75), 
                                                             new Rotation2d());
+
+        public static final Matrix<N3, N1> kStateStdDevs = new MatBuilder<>(Nat.N3(), Nat.N1())
+            .fill(0.02, 0.02, 0.01);
+        public static final Matrix<N6, N1> measurementStdDevs = new MatBuilder<>(Nat.N6(), Nat.N1())
+            .fill(0.1, 0.1, 0.1, 0.005,
+                0.005, 0.002);
+        public static final double kSlamStdDevsPerMeter = 3;
+        public static final Pose2d kApproximateStartingPose = new Pose2d(Units.inchesToMeters(508), 0, Rotation2d.fromDegrees(180));
     }
 
     public static final class Vision

@@ -9,7 +9,7 @@ import com.spartronics4915.frc2020.subsystems.Indexer;
 import com.spartronics4915.frc2020.subsystems.Launcher;
 import com.spartronics4915.lib.math.twodim.geometry.Pose2d;
 import com.spartronics4915.lib.math.twodim.geometry.Rotation2d;
-import com.spartronics4915.lib.math.threedim.Vec3;
+import com.spartronics4915.lib.math.threedim.math3.Vec3;
 import com.spartronics4915.lib.subsystems.estimator.RobotStateMap;
 
 import edu.wpi.first.wpilibj.util.Units;
@@ -154,13 +154,18 @@ public class LauncherCommands
     private double trackTargetAlt()
     {
         Pose2d robotToField = mStateMap.getLatestFieldToVehicle();
-        double turretAngle = mLauncher.getTurretDirection().getDegrees();
-        this.mCoordSysMgr.updateTurretAngle(turretAngle);
+        // we want an angle relative to turret neutral pose
+        this.mCoordSysMgr.updateTurretAngle(0); 
+
+        // mCoordSysMgr operates in inches, but accepts robot coords in meters.
         this.mCoordSysMgr.updateRobotPose(robotToField);
 
-        Vec3 targetPointInMnt = mCoordSysMgr.fieldPointToMount(mMatchTargetInches);
-        double angle = targetPointInMnt.angleOnXYPlane();
-        double dist = Units.inchesToMeters(targetPointInMnt.length());
+        // convert the match target in field coords into turret-relative coords
+        Vec3 targetInMnt = mCoordSysMgr.fieldPointToMount(mMatchTargetInches);
+
+        // targetInMnt "says it all".
+        double angle = targetInMnt.angleOnXYPlane();
+        double dist = Units.inchesToMeters(targetInMnt.length());
         if (angle > 180)
         {
             // [0-360] -> (-180, 180]

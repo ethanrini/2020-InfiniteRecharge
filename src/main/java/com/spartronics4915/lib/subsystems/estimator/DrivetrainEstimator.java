@@ -40,6 +40,7 @@ public class DrivetrainEstimator
 {
 
     private static final double kNominalDt = 0.01;
+    private static final int kMaxPastObserverStates = 200;
 
     private final ExtendedKalmanFilter<N3, N3, N3> mObserver;
     private final ExtendedKalmanFilter<N3, N3, N6> mVisionObserver;
@@ -85,7 +86,7 @@ public class DrivetrainEstimator
             x.get(0, 0), x.get(1, 0), x.get(2, 0));
     }
 
-    public void addVisionMeasurement(Pose2d visionRobotPose, double timestampSeconds)
+    public synchronized void addVisionMeasurement(Pose2d visionRobotPose, double timestampSeconds)
     {
         var low = mPastObserverStates.floorEntry(timestampSeconds);
         var high = mPastObserverStates.ceilingEntry(timestampSeconds);
@@ -109,10 +110,14 @@ public class DrivetrainEstimator
             return;
         }
 
-        for (var st : mPastObserverStates.tailMap(closestEntry.getKey()).values())
+        var tailMap = mPastObserverStates.tailMap(closestEntry.getKey(), true);
+        for (var st : tailMap.values())
         {
-            mObserver.setXhat(st.xHat);
-            mObserver.setP(st.errorCovariances);
+            if (visionRobotPose != null)
+            {
+                mObserver.setP(st.errorCovariances);
+                mObserver.setXhat(st.xHat);
+            }
             update(st.slamMeasurements, visionRobotPose, st.inputs);
 
             visionRobotPose = null;
@@ -125,11 +130,16 @@ public class DrivetrainEstimator
      * 
      * @return The estimated pose of the robot.
      */
-    public Pose2d update(Pose2d slamRobotPose, double dleftMeters, double drightMeters,
+    public synchronized Pose2d update(Pose2d slamRobotPose, double dleftMeters, double drightMeters,
         double dthetaRadians, double timeSeconds)
     {
         var u = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(dleftMeters, drightMeters, dthetaRadians);
         mPastObserverStates.put(timeSeconds, new ObserverState(mObserver, u, slamRobotPose));
+
+        if (mPastObserverStates.size() > kMaxPastObserverStates)
+        {
+            mPastObserverStates.remove(mPastObserverStates.firstKey());
+        }
 
         return update(slamRobotPose, null, u);
     }

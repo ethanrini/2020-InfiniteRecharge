@@ -1,5 +1,6 @@
 package com.spartronics4915.lib.math.threedim;
 
+import com.spartronics4915.lib.math.threedim.math3.*;
 import com.spartronics4915.lib.math.twodim.geometry.*;
 import com.spartronics4915.lib.util.Units;
 
@@ -281,7 +282,7 @@ public class CoordSysMgr
     public Vec3 fieldPointToMount(Vec3 pt)
     {
         this.rebuildTransforms();
-        return this.mFieldToMount.transformVector(pt);
+        return this.mFieldToMount.transformPoint(pt);
     }
 
     /**
@@ -295,8 +296,8 @@ public class CoordSysMgr
                                                 this.mCamToMount);
             this.mCamToField = Affine3.concatenate(this.mRobotToField, 
                                                 this.mCamToRobot);
-            this.mFieldToMount = Affine3.concatenate(this.mMountToRobot,
-                                                this.mRobotToField).asInverse();
+            this.mFieldToMount = Affine3.concatenate(this.mRobotToField,
+                                                this.mMountToRobot).asInverse();
             this.mDirty = false;
         }
     }

@@ -8,13 +8,14 @@ import java.util.List;
 
 import com.spartronics4915.frc2020.Constants;
 import com.spartronics4915.frc2020.CoordSysMgr2020;
-import com.spartronics4915.lib.math.threedim.Vec3;
+import com.spartronics4915.lib.math.threedim.math3.Vec3;
 import com.spartronics4915.lib.math.twodim.geometry.Pose2d;
 import com.spartronics4915.lib.math.twodim.geometry.Rotation2d;
 import com.spartronics4915.lib.math.twodim.geometry.Translation2d;
 import com.spartronics4915.lib.subsystems.SpartronicsSubsystem;
 import com.spartronics4915.lib.subsystems.estimator.RobotStateEstimator;
 import com.spartronics4915.lib.subsystems.estimator.RobotStateMap;
+import com.spartronics4915.lib.subsystems.estimator.VisionEvent;
 import com.spartronics4915.lib.util.Units;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
@@ -43,17 +44,6 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class Vision extends SpartronicsSubsystem
 {
-    /* public interfaces ------------------------------------*/
-    public class VisionEvent implements Runnable
-    {
-        public Pose2d mVisionEstimate=null;
-        public double mTimestamp=0;
-
-        public void run()
-        {
-        }; // override me
-    }
-
     /* member variables -------------------------------------*/
     private final RobotStateMap mOfficialRSM;
     private final CoordSysMgr2020 mCoordSysMgr;
@@ -77,7 +67,7 @@ public class Vision extends SpartronicsSubsystem
      */
     public Vision(RobotStateEstimator rse, Launcher launcher)
     {
-        this.mOfficialRSM = rse.getCameraRobotStateMap();
+        this.mOfficialRSM = rse.getBestRobotStateMap();
         this.mLauncher = launcher;
         this.mCoordSysMgr = new CoordSysMgr2020(); // our private copy
 
@@ -165,7 +155,7 @@ public class Vision extends SpartronicsSubsystem
             }
             Vec3 tgtInCam = new Vec3(camx, camy, camz);
             Vec3 tgtInRobot = this.mCoordSysMgr.camPointToRobot(tgtInCam);
-            if (tgtInRobot.a1 <= 0)
+            if (tgtInRobot.getX() <= 0)
                 this.dashboardPutString(Constants.Vision.kStatusKey, "CONFUSED!!!");
             else
                 this.dashboardPutString(Constants.Vision.kStatusKey, "active");
@@ -205,8 +195,8 @@ public class Vision extends SpartronicsSubsystem
             Vec3 robotPos = mCoordSysMgr.robotPointToField(Vec3.ZeroPt);
             // Use robot's heading in our poseEstimate - remember to convert 
             // from inches to meters before commiting to RSM.
-            Pose2d poseEstimate = new Pose2d(Units.inchesToMeters(robotPos.a1), 
-                                            Units.inchesToMeters(robotPos.a2), 
+            Pose2d poseEstimate = new Pose2d(Units.inchesToMeters(robotPos.getX()), 
+                                            Units.inchesToMeters(robotPos.getY()), 
                                             r2d);
             Iterator<VisionEvent> it = this.mListeners.iterator();
             while (it.hasNext())
@@ -227,7 +217,8 @@ public class Vision extends SpartronicsSubsystem
             this.dashboardPutNumber(Constants.Vision.kPoseErrorKey, derror);
 
             // NB: robotPos is in inches! (dashboard too!)
-            String pstr = String.format("%g %g %g", robotPos.a1, robotPos.a2, robotHeading);
+            String pstr = String.format("%g %g %g", 
+                            robotPos.getX(), robotPos.getY(), robotHeading);
             this.dashboardPutString(Constants.Vision.kPoseEstimateKey, pstr);
 
             double delay = Timer.getFPGATimestamp() - timestamp;
